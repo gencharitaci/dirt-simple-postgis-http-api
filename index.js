@@ -72,7 +72,7 @@ fastify.register(require('@fastify/swagger'), {
       "version": process.env.npm_package_version || ""
     },
     "externalDocs": {
-      "url": "https://github.com/tobinbradley/dirt-simple-postgis-http-api",
+      "url": "https://github.com/gencharitaci/dirt-simple-postgis-http-api",
       "description": "Source code on Github"
     },
     "tags": [{
