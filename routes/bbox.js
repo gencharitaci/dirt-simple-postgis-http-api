@@ -18,26 +18,33 @@ const schema = {
   tags: ['api'],
   summary: 'minimum bounding rectangle',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view to query.'
-    }
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view to query.'
+      }
+    }, 
+    required: ['table'],
   },
   querystring: {
-    geom_column: {
-      type: 'string',
-      description: 'The geometry column of the table.',
-      default: 'geom'
-    },
-    srid: {
-      type: 'integer',
-      description: 'The SRID for the returned centroid. The default is <em>4326</em> WGS84 Lat/Lng.',
-      default: 4326
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    }
+    type: 'object',
+    properties: {
+      geom_column: {
+        type: 'string',
+        description: 'The geometry column of the table.',
+        default: 'geom'
+      },
+      srid: {
+        type: 'integer',
+        description: 'The SRID for the returned centroid. The default is <em>4326</em> WGS84 Lat/Lng.',
+        default: 4326
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      }
+    }, 
   }
 }
 

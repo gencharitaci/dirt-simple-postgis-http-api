@@ -23,9 +23,12 @@ const schema = {
   tags: ['meta'],
   summary: 'list table columns',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view to query.'
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view to query.'
+      }
     }
   }
 }

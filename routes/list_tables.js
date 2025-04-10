@@ -32,9 +32,12 @@ const schema = {
   tags: ['meta'],
   summary: 'list tables',
   querystring: {
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
+    type: 'object',
+    properties: {
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      }
     }
   }
 }

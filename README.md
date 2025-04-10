@@ -8,6 +8,9 @@ The Dirt-Simple PostGIS HTTP API, or `dirt`, exposes PostGIS functionality to yo
 
 
 # Changelog
+- 04/10/2025
+  Route schemas restructured to be compatible with fastify v5.2.2
+
 - 04/08/2025
 
 | NPM Package           | Previous | Current  |

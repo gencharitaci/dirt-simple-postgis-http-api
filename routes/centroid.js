@@ -29,32 +29,39 @@ const sql = (params, query) => {
 const schema = {
   description: 'Get the centroids of feature(s).',
   tags: ['api'],
-  summary: 'feature(s) centroids',
+  summary: 'Feature(s) centroids',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view to query.'
-    }
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view to query.'
+      }
+    },
+    required: ['table']
   },
   querystring: {
-    geom_column: {
-      type: 'string',
-      description: 'The geometry column of the table.',
-      default: 'geom'
-    },
-    srid: {
-      type: 'integer',
-      description: 'The SRID for the returned centroids.',
-      default: 4326
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    },
-    force_on_surface: {
-      type: 'boolean',
-      description: 'Set <em>true</em> to force point on surface. The default is <em>false</em>.',
-      default: false
+    type: 'object',
+    properties: {
+      geom_column: {
+        type: 'string',
+        description: 'The geometry column of the table.',
+        default: 'geom'
+      },
+      srid: {
+        type: 'integer',
+        description: 'The SRID for the returned centroids.',
+        default: 4326
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      },
+      force_on_surface: {
+        type: 'boolean',
+        description: 'Set true to force point on surface. The default is false.',
+        default: false
+      }
     }
   }
 }

@@ -55,32 +55,38 @@ const schema = {
   tags: ['feature'],
   summary: 'return Geobuf',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view.'
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view.'
+      }
     }
   },
   querystring: {
-    geom_column: {
-      type: 'string',
-      description: 'The geometry column of the table.',
-      default: 'geom'
-    },
-    columns: {
-      type: 'string',
-      description:
-        'Columns to return as GeoJSON properites. The default is geometry only. <br/><em>Note: the geometry column should not be listed here, and columns must be explicitly named.</em>'
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    },
-    bounds: {
-      type: 'string',
-      pattern:
-        '^-?[0-9]{0,20}.?[0-9]{1,20}?(,-?[0-9]{0,20}.?[0-9]{1,20}?){2,3}$',
-      description:
-        'Optionally limit output to features that intersect bounding box. Can be expressed as a bounding box (sw.lng, sw.lat, ne.lng, ne.lat) or a Z/X/Y tile (0,0,0).'
+    type: 'object',
+    properties: {
+      geom_column: {
+        type: 'string',
+        description: 'The geometry column of the table.',
+        default: 'geom'
+      },
+      columns: {
+        type: 'string',
+        description:
+          'Columns to return as GeoJSON properites. The default is geometry only. <br/><em>Note: the geometry column should not be listed here, and columns must be explicitly named.</em>'
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      },
+      bounds: {
+        type: 'string',
+        pattern:
+          '^-?[0-9]{0,20}.?[0-9]{1,20}?(,-?[0-9]{0,20}.?[0-9]{1,20}?){2,3}$',
+        description:
+          'Optionally limit output to features that intersect bounding box. Can be expressed as a bounding box (sw.lng, sw.lat, ne.lng, ne.lat) or a Z/X/Y tile (0,0,0).'
+      }
     }
   }
 }

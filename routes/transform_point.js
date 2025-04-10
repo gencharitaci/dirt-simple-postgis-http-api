@@ -31,17 +31,23 @@ const schema = {
   tags: ['api'],
   summary: 'transform point to new SRID',
   params: {
-    point: {
-      type: 'string',
-      pattern: '^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))',
-      description: 'A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.'
+    type: 'object',
+    properties: {
+      point: {
+        type: 'string',
+        pattern: '^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))',
+        description: 'A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.'
+      }
     }
   },
   querystring: {
-    srid: {
-      type: 'integer',
-      description: 'The SRID of the coordinate system to return the point in.',
-      default: 4326
+    type: 'object',
+    properties: {
+      srid: {
+        type: 'integer',
+        description: 'The SRID of the coordinate system to return the point in.',
+        default: 4326
+      }
     }
   }
 }

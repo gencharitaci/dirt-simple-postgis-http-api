@@ -37,42 +37,48 @@ const schema = {
   tags: ['feature'],
   summary: 'return MVT',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view.'
-    },
-    z: {
-      type: 'integer',
-      description: 'Z value of ZXY tile.'
-    },
-    x: {
-      type: 'integer',
-      description: 'X value of ZXY tile.'
-    },
-    y: {
-      type: 'integer',
-      description: 'Y value of ZXY tile.'
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view.'
+      },
+      z: {
+        type: 'integer',
+        description: 'Z value of ZXY tile.'
+      },
+      x: {
+        type: 'integer',
+        description: 'X value of ZXY tile.'
+      },
+      y: {
+        type: 'integer',
+        description: 'Y value of ZXY tile.'
+      }
     }
   },
   querystring: {
-    geom_column: {
-      type: 'string',
-      description: 'Optional geometry column of the table. The default is geom.',
-      default: 'geom'
-    },
-    columns: {
-      type: 'string',
-      description:
-        'Optional columns to return with MVT. The default is no columns.'
-    },
-    id_column: {
-      type: 'string',
-      description:
-        'Optional id column name to be used with Mapbox GL Feature State. This column must be an integer a string cast as an integer.'
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
+    type: 'object',
+    properties: {
+      geom_column: {
+        type: 'string',
+        description: 'Optional geometry column of the table. The default is geom.',
+        default: 'geom'
+      },
+      columns: {
+        type: 'string',
+        description:
+          'Optional columns to return with MVT. The default is no columns.'
+      },
+      id_column: {
+        type: 'string',
+        description:
+          'Optional id column name to be used with Mapbox GL Feature State. This column must be an integer a string cast as an integer.'
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      } 
     }
   }
 }

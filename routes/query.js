@@ -28,33 +28,39 @@ const schema = {
   tags: ['api'],
   summary: 'table query',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view.'
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view.'
+      }
     }
   },
   querystring: {
-    columns: {
-      type: 'string',
-      description: 'Columns to return.',
-      default: '*'
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    },
-    sort: {
-      type: 'string',
-      description: 'Optional sort by column(s).'
-    },
-    limit: {
-      type: 'integer',
-      description: 'Optional limit to the number of output features.',
-      default: 100
-    },
-    group: {
-      type: 'string',
-      description: 'Optional column(s) to group by.'
+    type: 'object',
+    properties: {
+      columns: {
+        type: 'string',
+        description: 'Columns to return.',
+        default: '*'
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      },
+      sort: {
+        type: 'string',
+        description: 'Optional sort by column(s).'
+      },
+      limit: {
+        type: 'integer',
+        description: 'Optional limit to the number of output features.',
+        default: 100
+      },
+      group: {
+        type: 'string',
+        description: 'Optional column(s) to group by.'
+      }
     }
   }
 }

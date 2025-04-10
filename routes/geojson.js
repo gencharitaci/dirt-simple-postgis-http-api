@@ -52,39 +52,45 @@ const schema = {
   tags: ['feature'],
   summary: 'return GeoJSON',
   params: {
-    table: {
-      type: 'string',
-      description: 'The name of the table or view.'
+    type: 'object',
+    properties: {
+      table: {
+        type: 'string',
+        description: 'The name of the table or view.'
+      }
     }
   },
   querystring: {
-    geom_column: {
-      type: 'string',
-      description: 'The geometry column of the table.',
-      default: 'geom'
-    },
-    columns: {
-      type: 'string',
-      description: 'Columns to return as GeoJSON properites. The default is no columns. <br/><em>Note: the geometry column should not be listed here, and columns must be explicitly named.</em>'
-    },
-    id_column: {
-      type: 'string',
-      description:
-        'Optional id column name to be used with Mapbox GL Feature State. This column must be an integer a string cast as an integer.'
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    },
-    bounds: {
-      type: 'string',
-      pattern: '^-?[0-9]{0,20}.?[0-9]{1,20}?(,-?[0-9]{0,20}.?[0-9]{1,20}?){2,3}$',
-      description: 'Optionally limit output to features that intersect bounding box. Can be expressed as a bounding box (sw.lng, sw.lat, ne.lng, ne.lat) or a Z/X/Y tile (0,0,0).'
-    },
-    precision: {
-      type: 'integer',
-      description: 'The maximum number of decimal places to return. Default is 9.',
-      default: 9
+    type: 'object',
+    properties: {
+      geom_column: {
+        type: 'string',
+        description: 'The geometry column of the table.',
+        default: 'geom'
+      },
+      columns: {
+        type: 'string',
+        description: 'Columns to return as GeoJSON properites. The default is no columns. <br/><em>Note: the geometry column should not be listed here, and columns must be explicitly named.</em>'
+      },
+      id_column: {
+        type: 'string',
+        description:
+          'Optional id column name to be used with Mapbox GL Feature State. This column must be an integer a string cast as an integer.'
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      },
+      bounds: {
+        type: 'string',
+        pattern: '^-?[0-9]{0,20}.?[0-9]{1,20}?(,-?[0-9]{0,20}.?[0-9]{1,20}?){2,3}$',
+        description: 'Optionally limit output to features that intersect bounding box. Can be expressed as a bounding box (sw.lng, sw.lat, ne.lng, ne.lat) or a Z/X/Y tile (0,0,0).'
+      },
+      precision: {
+        type: 'integer',
+        description: 'The maximum number of decimal places to return. Default is 9.',
+        default: 9
+      }
     }
   }
 }

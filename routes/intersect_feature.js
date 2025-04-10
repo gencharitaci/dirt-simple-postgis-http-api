@@ -31,47 +31,53 @@ const schema = {
   tags: ['api'],
   summary: 'transform point to new SRID',
   params: {
-    table_from: {
-      type: 'string',
-      description: 'Table to use as an overlay.'
-    },
-    table_to: {
-      type: 'string',
-      description: 'Table to be intersected.'
+    type: 'object',
+    properties: {
+      table_from: {
+        type: 'string',
+        description: 'Table to use as an overlay.'
+      },
+      table_to: {
+        type: 'string',
+        description: 'Table to be intersected.'
+      }
     }
   },
   querystring: {
-    geom_column_from: {
-      type: 'string',
-      description: 'The geometry column of the from_table. The default is geom.',
-      default: 'geom'
-    },
-    geom_column_to: {
-      type: 'string',
-      description: 'The geometry column of the to_table. The default is geom.',
-      default: 'geom'
-    },
-    columns: {
-      type: 'string',
-      description: 'Columns to return. Columns should be prefaced by the table name if the column name exists in both tables (ex: f.pid, t.prkname). The default is all columns.',
-      default: '*'
-    },
-    filter: {
-      type: 'string',
-      description: 'Optional filter parameters for a SQL WHERE statement.'
-    },
-    distance: {
-      type: 'integer',
-      description: 'Buffer the overlay feature(s) by units of the geometry column.',
-      default: 0
-    },
-    sort: {
-      type: 'string',
-      description: 'Optional sort column(s).'
-    },
-    limit: {
-      type: 'integer',
-      description: 'Optional limit to the number of output features.'
+    type: 'object',
+    properties: {
+      geom_column_from: {
+        type: 'string',
+        description: 'The geometry column of the from_table. The default is geom.',
+        default: 'geom'
+      },
+      geom_column_to: {
+        type: 'string',
+        description: 'The geometry column of the to_table. The default is geom.',
+        default: 'geom'
+      },
+      columns: {
+        type: 'string',
+        description: 'Columns to return. Columns should be prefaced by the table name if the column name exists in both tables (ex: f.pid, t.prkname). The default is all columns.',
+        default: '*'
+      },
+      filter: {
+        type: 'string',
+        description: 'Optional filter parameters for a SQL WHERE statement.'
+      },
+      distance: {
+        type: 'integer',
+        description: 'Buffer the overlay feature(s) by units of the geometry column.',
+        default: 0
+      },
+      sort: {
+        type: 'string',
+        description: 'Optional sort column(s).'
+      },
+      limit: {
+        type: 'integer',
+        description: 'Optional limit to the number of output features.'
+      }
     }
   }
 }
