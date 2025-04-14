@@ -1,6 +1,8 @@
 // route query
 const sql = (params, query) => {
-  const [x, y, srid] = params.point.match(/^((-?\d+\.?\d+)(,-?\d+\.?\d+)(,[0-9]{4}))/)[0].split(',')
+  const [x, y, srid] = params.point
+    .match(/^((-?\d+\.?\d+)(,-?\d+\.?\d+)(,[0-9]{4}))/)[0]
+    .split(",");
 
   return `
   SELECT
@@ -22,62 +24,57 @@ const sql = (params, query) => {
         ${query.srid}
       )
     ) as y
-  `
-}
+  `;
+};
 
 // route schema
 const schema = {
-  description: 'Transform a point to a different coordinate system.',
-  tags: ['api'],
-  summary: 'transform point to new SRID',
+  description: "Transform a point to a different coordinate system.",
+  tags: ["api"],
+  summary: "transform point to new SRID",
   params: {
-    type: 'object',
-    properties: {
-      point: {
-        type: 'string',
-        pattern: '^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))',
-        description: 'A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.'
-      }
-    }
+    point: {
+      type: "string",
+      pattern: "^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))",
+      description:
+        "A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.",
+    },
   },
   querystring: {
-    type: 'object',
-    properties: {
-      srid: {
-        type: 'integer',
-        description: 'The SRID of the coordinate system to return the point in.',
-        default: 4326
-      }
-    }
-  }
-}
+    srid: {
+      type: "integer",
+      description: "The SRID of the coordinate system to return the point in.",
+      default: 4326,
+    },
+  },
+};
 
 // create route
 module.exports = function (fastify, opts, next) {
   fastify.route({
-    method: 'GET',
-    url: '/transform_point/:point',
+    method: "GET",
+    url: "/transform_point/:point",
     schema: schema,
     handler: function (request, reply) {
-      fastify.pg.connect(onConnect)
+      fastify.pg.connect(onConnect);
 
       function onConnect(err, client, release) {
         if (err) {
-          request.log.error(err)
-          return reply.code(500).send({ error: "Database connection error." })
+          request.log.error(err);
+          return reply.code(500).send({ error: "Database connection error." });
         }
 
         client.query(
           sql(request.params, request.query),
           function onResult(err, result) {
-            release()
-            reply.send(err || result.rows)
+            release();
+            reply.send(err || result.rows);
           }
-        )
+        );
       }
-    }
-  })
-  next()
-}
+    },
+  });
+  next();
+};
 
-module.exports.autoPrefix = '/v1'
+module.exports.autoPrefix = "/v1";

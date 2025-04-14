@@ -20,54 +20,52 @@ const sql = (params, query) => {
   i.table_schema not in  ('pg_catalog', 'information_schema')
 
     -- Optional where filter
-    ${query.filter ? `and ${query.filter}` : '' }
+    ${query.filter ? `and ${query.filter}` : ""}
 
   ORDER BY table_name
-  `
-}
+  `;
+};
 
 // route schema
 const schema = {
-  description: 'List tables and views. Note the service user needs read permission on the geometry_columns view.',
-  tags: ['meta'],
-  summary: 'list tables',
+  description:
+    "List tables and views. Note the service user needs read permission on the geometry_columns view.",
+  tags: ["meta"],
+  summary: "list tables",
   querystring: {
-    type: 'object',
-    properties: {
-      filter: {
-        type: 'string',
-        description: 'Optional filter parameters for a SQL WHERE statement.'
-      }
-    }
-  }
-}
+    filter: {
+      type: "string",
+      description: "Optional filter parameters for a SQL WHERE statement.",
+    },
+  },
+};
 
 // create route
 module.exports = function (fastify, opts, next) {
   fastify.route({
-    method: 'GET',
-    url: '/list_tables',
+    method: "GET",
+    url: "/list_tables",
     schema: schema,
     handler: function (request, reply) {
-      fastify.pg.connect(onConnect)
+      fastify.pg.connect(onConnect);
 
       function onConnect(err, client, release) {
         if (err) {
-          request.log.error(err)
-          return reply.code(500).send({"error": "Database connection error."})
+          request.log.error(err);
+          return reply.code(500).send({ error: "Database connection error." });
         }
 
         client.query(
           sql(request.params, request.query),
           function onResult(err, result) {
-            release()
-            reply.send(err || result.rows)
+            release();
+            reply.send(err || result.rows);
           }
-        )
+        );
       }
-    }
-  })
-  next()
-}
+    },
+  });
+  next();
+};
 
-module.exports.autoPrefix = '/v1'
+module.exports.autoPrefix = "/v1";

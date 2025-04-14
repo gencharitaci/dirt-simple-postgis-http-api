@@ -1,6 +1,8 @@
 // route query
 const sql = (params, query) => {
-  const [x, y, srid] = params.point.match(/^((-?\d+\.?\d+)(,-?\d+\.?\d+)(,[0-9]{4}))/)[0].split(',')
+  const [x, y, srid] = params.point
+    .match(/^((-?\d+\.?\d+)(,-?\d+\.?\d+)(,[0-9]{4}))/)[0]
+    .split(",");
 
   return `
   SELECT
@@ -17,7 +19,7 @@ const sql = (params, query) => {
   ${params.table}
 
   -- Optional Filter
-  ${query.filter ? `WHERE ${query.filter}` : '' }
+  ${query.filter ? `WHERE ${query.filter}` : ""}
 
   ORDER BY
     ${query.geom_column} <-> ST_Transform(
@@ -26,80 +28,76 @@ const sql = (params, query) => {
     )
 
   LIMIT ${query.limit}
-  `
-}
+  `;
+};
 
 // route schema
 const schema = {
-  description: 'Find the records closest to a point in order of distance. Note that if no limit if given, all records are returned.',
-  tags: ['api'],
-  summary: 'records closest to point',
+  description:
+    "Find the records closest to a point in order of distance. Note that if no limit if given, all records are returned.",
+  tags: ["api"],
+  summary: "records closest to point",
   params: {
-    type: 'object',
-    properties: {
-      table: {
-        type: 'string',
-        description: 'The name of the table or view.'
-      },
-      point: {
-        type: 'string',
-        pattern: '^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))',
-        description: 'A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.'
-      }
-    }
+    table: {
+      type: "string",
+      description: "The name of the table or view.",
+    },
+    point: {
+      type: "string",
+      pattern: "^((-?\\d+\\.?\\d+)(,-?\\d+\\.?\\d+)(,[0-9]{4}))",
+      description:
+        "A point expressed as <em>X,Y,SRID</em>. Note for Lng/Lat coordinates, Lng is X and Lat is Y.",
+    },
   },
   querystring: {
-    type: 'object',
-    properties: {
-      geom_column: {
-        type: 'string',
-        description: 'The geometry column of the table.',
-        default: 'geom'
-      },
-      columns: {
-        type: 'string',
-        description: 'Columns to return.',
-        default: '*'
-      },
-      filter: {
-        type: 'string',
-        description: 'Optional filter parameters for a SQL WHERE statement.'
-      },
-      limit: {
-        type: 'integer',
-        description: 'Limit the number of output features.',
-        default: 10
-      }
-    }
-  }
-}
+    geom_column: {
+      type: "string",
+      description: "The geometry column of the table.",
+      default: "geom",
+    },
+    columns: {
+      type: "string",
+      description: "Columns to return.",
+      default: "*",
+    },
+    filter: {
+      type: "string",
+      description: "Optional filter parameters for a SQL WHERE statement.",
+    },
+    limit: {
+      type: "integer",
+      description: "Limit the number of output features.",
+      default: 10,
+    },
+  },
+};
 
 // create route
 module.exports = function (fastify, opts, next) {
   fastify.route({
-    method: 'GET',
-    url: '/nearest/:table/:point',
+    method: "GET",
+    url: "/nearest/:table/:point",
     schema: schema,
     handler: function (request, reply) {
-      fastify.pg.connect(onConnect)
+      fastify.pg.connect(onConnect);
 
       function onConnect(err, client, release) {
         if (err) {
-          request.log.error(err)
-          return reply.code(500).send({ error: "Database connection error." })
+          request.log.error(err);
+          return reply.code(500).send({ error: "Database connection error." });
         }
 
         client.query(
           sql(request.params, request.query),
           function onResult(err, result) {
-            release()
-            reply.send(err || result.rows)
+            release();
+            reply.send(err || result.rows);
           }
-        )
+        );
       }
-    }
-  })
-  next()
-}
+    },
+  });
+  next();
+};
 
-module.exports.autoPrefix = '/v1'
+module.exports.autoPrefix = "/v1";
