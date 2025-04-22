@@ -1,0 +1,8 @@
+config/index.json
+.directory
+node_modules
+TODO.md
+.vscode
+.env
+routes/dep_*.js
+routes/test_*.js
