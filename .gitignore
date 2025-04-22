@@ -4,5 +4,6 @@ node_modules
 TODO.md
 .vscode
 .env
+package-lock.json
 routes/dep_*.js
 routes/test_*.js
