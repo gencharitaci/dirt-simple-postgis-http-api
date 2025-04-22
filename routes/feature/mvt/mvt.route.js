@@ -2,6 +2,12 @@
 import { errorResponse } from '../../../utils/response.js';
 import { routeTag } from '../../../utils/route-tag.js';
 
+/**
+ * Query URL Sample:
+ * http://localhost:3009/api/v1/mvt/tax_parcels/14/4516/6478?geom_column=the_geom
+ * table: tax_parcels, z:14, x:4516, y:6478
+ */
+
 const sql = (params, query) => {
   const { table, z, x, y } = params;
   const {
