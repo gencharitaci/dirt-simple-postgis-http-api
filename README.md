@@ -6,7 +6,7 @@ The Dirt-Simple PostGIS HTTP API, or `dirt`, exposes PostGIS functionality to yo
 
 **Dirt is now optimized for Postgis 3. If you're using Postgis 2.x, use the [postgis2x](https://github.com/tobinbradley/dirt-simple-postgis-http-api/tree/postgis2x) branch.**
 
-**[Previous version (v4.8.0](https://github.com/gencharitaci/dirt-simple-postgis-http-api/tree/v4.8.0)**
+**[Previous version (v4.8.0)](https://github.com/gencharitaci/dirt-simple-postgis-http-api/tree/v4.8.0)**
 
 # Changelog
 - 04/08/2025
