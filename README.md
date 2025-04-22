@@ -36,10 +36,10 @@ The Dirt-Simple PostGIS HTTP API, or `dirt`, exposes PostGIS functionality to yo
 
 ### Step 1: get the goodies
 
-Note: if you don't have [git](https://git-scm.com/), you can download a [zip file](https://github.com/tobinbradley/dirt-simple-postgis-http-api/archive/master.zip) of the project instead.
+Note: if you don't have [git](https://git-scm.com/), you can download a [zip file](https://github.com/gencharitaci/dirt-simple-postgis-http-api/archive/main.zip) of the project instead.
 
 ```bash
-git clone https://github.com/tobinbradley/dirt-simple-postgis-http-api.git dirt
+git clone https://github.com/gencharitaci/dirt-simple-postgis-http-api.git dirt
 cd dirt
 npm install
 ```
