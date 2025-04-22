@@ -1,6 +1,6 @@
 import fastify from 'fastify';
 import { writeFile } from 'fs/promises';
-import config from './config/index.js';
+import config from '../config/index.js';
 
 import autoload from '@fastify/autoload';
 import caching from '@fastify/caching';
@@ -11,7 +11,7 @@ import postgres from '@fastify/postgres';
 import fastifyRateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
-import tableAccessControl from './plugins/table-access-control.js';
+import tableAccessControl from '../plugins/table-access-control.js';
 
 
 

@@ -22,8 +22,8 @@ const sql = (params, query) => {
 
   return `
     WITH input_geom AS (
-      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(${x}, ${y}), ${srid}), srid) AS geom,
-             srid
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(${x}, ${y}), ${srid}), srid) 
+        AS geom, srid
       FROM (
         SELECT ST_SRID(${geom_column}) AS srid
         FROM ${table}
@@ -105,15 +105,12 @@ export default function (fastify, opts, next) {
     schema,
     handler: async (request, reply) => {
       const { params, query } = request;
-
       const client = await fastify.pg.connect();
 
       try {
         const sqlText = sql(params, query);
         request.log.info(`Executing SQL: ${sqlText}`);
-
         const result = await client.query(sqlText);
-
         return reply.send(successResponse(result.rows));
       } catch (err) {
         request.log.error({ err }, 'INTERSECT POINT Query Error');

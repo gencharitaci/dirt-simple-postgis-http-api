@@ -117,24 +117,19 @@ export default function (fastify, opts, next) {
     schema,
     handler: async (request, reply) => {
       const { params, query } = request;
-
       const client = await fastify.pg.connect();
 
       try {
         const sqlText = sql(params, query);
         request.log.info(`Executing SQL: ${sqlText}`);
-
         const result = await client.query(sqlText);
-
         if (result.rows.length === 0) {
           return reply.code(204).send(); // No Content
         }
-
         const geojson = {
           type: 'FeatureCollection',
           features: result.rows.map((el) => el.geojson)
         };
-
         return reply.send(successResponse(geojson));
       } catch (err) {
         request.log.error({ err }, 'GEOJSON Query Error');

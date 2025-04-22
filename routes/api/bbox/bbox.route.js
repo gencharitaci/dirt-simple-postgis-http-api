@@ -74,9 +74,7 @@ export default function (fastify, opts, next) {
       try {
         const sqlText = sql(params, query);
         request.log.info({ sql: sqlText }, 'Executing BBOX SQL');
-
         const result = await client.query(sqlText);
-
         return reply.send(successResponse(result.rows));
       } catch (err) {
         request.log.error({ err }, 'BBOX Query Error');

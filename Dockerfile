@@ -21,4 +21,3 @@ USER node
 
 # Run application
 CMD [ "npm", "run", "start" ]
-

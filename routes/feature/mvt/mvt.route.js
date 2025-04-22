@@ -82,20 +82,16 @@ export default function (fastify, opts, next) {
     schema,
     handler: async (request, reply) => {
       const { params, query } = request;
-
       const client = await fastify.pg.connect();
 
       try {
         const sqlText = sql(params, query);
         request.log.info(`Executing SQL: ${sqlText}`);
-
         const result = await client.query(sqlText);
         const mvt = result.rows[0]?.mvt;
-
         if (!mvt || mvt.length === 0) {
           return reply.code(204).send(); // No Content
         }
-
         return reply
           .header('Content-Type', 'application/x-protobuf')
           .send(mvt);

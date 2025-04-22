@@ -47,16 +47,14 @@ export default function (fastify, opts, next) {
     url: '/list_columns/:table',
     schema,
     handler: async (request, reply) => {
-      const params = request.params;
+      const { params, query } = request;
       const client = await fastify.pg.connect();
 
       try {
 
-        const sqlText = sql(params);
+        const sqlText = sql(params, query);
         request.log.info(`Executing SQL: ${sqlText}`);
-
         const result = await client.query(sqlText);
-
         return reply.send(successResponse(result.rows));
       } catch (err) {
         request.log.error({ err }, 'List Columns Query Error');

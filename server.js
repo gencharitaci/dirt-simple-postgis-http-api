@@ -1,5 +1,5 @@
 // server.js
-import buildApp from './app.js'
+import buildApp from './app/index.js'
 import { env } from './config/index.js'
 
 // Start Server

@@ -2,10 +2,7 @@
   "name": "dirt-simple-postgis-http-api",
   "version": "5.0.0",
   "description": "The Dirt-Simple PostGIS HTTP API exposes PostGIS functionality to your applications over HTTP.",
-  "author": "Tobin Bradley",
-  "maintainers": [
-    "Adem Kurtipek"
-  ],
+  "author": "Adem Kurtipek",
   "license": "MIT",
   "homepage": "https://github.com/gencharitaci/dirt-simple-postgis-http-api",
   "repository": {
