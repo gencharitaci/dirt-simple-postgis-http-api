@@ -7,25 +7,6 @@ The Dirt-Simple PostGIS HTTP API, or `dirt`, exposes PostGIS functionality to yo
 **Dirt is now optimized for Postgis 3. If you're using Postgis 2.x, use the [postgis2x](https://github.com/tobinbradley/dirt-simple-postgis-http-api/tree/postgis2x) branch.**
 
 
-# Changelog
-- 04/08/2025
-
-| NPM Package           | Previous | Current  |
-|-----------------------|----------|----------|
-| @fastify/autoload     | ^5.8.0   | ^6.3.0   |
-| @fastify/caching      | ^8.3.0   | ^9.0.3   |
-| @fastify/compress     | ^7.0.0   | ^8.0.1   |
-| @fastify/cors         | ^9.0.1   | ^11.0.1  |
-| @fastify/postgres     | ^5.2.2   | ^6.0.2   |
-| @fastify/rate-limit   | ^9.1.0   | ^10.2.2  |
-| @fastify/swagger      | ^8.14.0  | ^9.4.2   |
-| @fastify/swagger-ui   | ^3.0.0   | ^5.2.2   |
-| dotenv               | ^16.4.5  | ^16.4.7  |
-| fastify              | ^4.26.1  | ^5.2.2   |
-| pg                   | ^8.11.3  | ^8.14.1  |
-
-
-
 ## Getting started
 
 ### Requirements
