@@ -19,10 +19,10 @@ The Dirt-Simple PostGIS HTTP API, or `dirt`, exposes PostGIS functionality to yo
 | @fastify/cors         | ^9.0.1   | ^11.0.1  |
 | @fastify/postgres     | ^5.2.2   | ^6.0.2   |
 | @fastify/rate-limit   | ^9.1.0   | ^10.2.2  |
-| @fastify/swagger      | ^8.14.0  | ^9.4.2   |
+| @fastify/swagger      | ^8.14.0  | ^9.5.0   |
 | @fastify/swagger-ui   | ^3.0.0   | ^5.2.2   |
-| dotenv               | ^16.4.5  | ^16.4.7  |
-| fastify              | ^4.26.1  | ^5.2.2   |
+| dotenv               | ^16.4.5  | ^16.5.0  |
+| fastify              | ^4.26.1  | ^5.3.2   |
 | pg                   | ^8.11.3  | ^8.14.1  |
 
 
