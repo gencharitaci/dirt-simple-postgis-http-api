@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { generateNonce } from '../utils/nonce-generator.js';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ export const env = {
     serverCache: process.env.CACHE_SERVERCACHE,
     rateMax: process.env.RATE_MAX,
     basePath: process.env.BASE_PATH,
+    apiRoutePrefix: process.env.API_PREFIX,
     appVersion: process.env.npm_package_version,
     helmetGlobal: process.env.HELMET_GLOBAL,
     helmetEnableCSPNonces: process.env.HELMET_ENABLE_CSPNONCES,
@@ -48,16 +50,27 @@ export default {
     postgres: env.postgres,
 
     // Helmet - contentSecurityPolicy
-    helmet: {
-        global: env.helmetGlobal !== 'false',
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'"],
-                styleSrc: ["'self'"]
-            }
-        }
-    },
+	/*
+	helmet: {
+		global: env.helmetGlobal,
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: ["'self'", "*", `'nonce-${generateNonce()}'`], // Necessary for SwaggerUI, add nonce here
+				styleSrc: ["'self'", "'unsafe-inline'"], // Necessary for SwaggerUI
+				imgSrc: ["'self'", "data:", "https:"],
+				// connectSrc: ["'self'"],
+				// fontSrc: ["'self'"],
+				// objectSrc: ["'none'"],
+				// mediaSrc: ["'self'"],
+				// frameSrc: ["'self'"],
+				// upgradeInsecureRequests: [] // Redirects HTTP to HTTPS
+			}
+		}
+	},
+	*/
+
+
 
     // Cache settings
     cache: {
@@ -76,7 +89,7 @@ export default {
     logger,
 
     // Routes
-    routePrefix: '/api/v1',
+    routePrefix: env.apiRoutePrefix,
     routesDir: path.join(path.resolve(), 'routes'),
 
     // Swagger config
@@ -95,13 +108,12 @@ export default {
             url: 'https://github.com/gencharitaci/dirt-simple-postgis-http-api',
             description: 'Find out more about Dirt-Simple PostGIS HTTP API | Source code on Github'
         },
-        host: env.isProd
-            ? env.swaggerHost || ""
-            : "localhost:3009",
-        basePath: env.basePath || '/',
-        schemes: env.isProd
-            ? env.swaggerSchemas?.split(",") || ["https"]
-            : ["http"],
+        // host: env.swaggerHost || `${env.host || 'localhost'}:${env.port || 3009}`,
+        host: env.swaggerHost,
+        basePath: env.basePath || '/dirt',
+        schemes: env.isProduction
+            ? env.swaggerSchemas || ["https", "http"]
+            : ["https"],
         consumes: ["application/json"],
         produces: ["application/json"],
         tags: [

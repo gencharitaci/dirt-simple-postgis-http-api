@@ -2,7 +2,6 @@
 import { errorResponse, successResponse } from '../../../utils/response.js';
 import { routeTag } from '../../../utils/route-tag.js';
 
-
 const sql = (params, query) => {
   const { table } = params;
   const {
@@ -29,7 +28,6 @@ const sql = (params, query) => {
     ) AS sub;
   `;
 };
-
 
 const schema = {
   description: 'Get the centroids of feature(s).',
@@ -60,7 +58,7 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional filter parameters for a SQL WHERE statement.'
+        description: 'Optional filter parameters for a SQL WHERE statement. .'
       },
       force_on_surface: {
         type: 'boolean',
@@ -82,11 +80,21 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info({ sql: sqlText }, 'Executing CENTROID SQL');
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing CENTROID SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'CENTROID Query Error');
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'CENTROID Query Error');
         return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();

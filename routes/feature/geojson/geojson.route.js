@@ -61,7 +61,6 @@ const sql = (params, query) => {
   `;
 };
 
-
 const schema = {
   description: 'Return table as GeoJSON.',
   tags: [routeTag(import.meta.url)],
@@ -121,7 +120,12 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing GEOJSON SQL');
+
         const result = await client.query(sqlText);
         if (result.rows.length === 0) {
           return reply.code(204).send(); // No Content
@@ -132,8 +136,13 @@ export default function (fastify, opts, next) {
         };
         return reply.send(successResponse(geojson));
       } catch (err) {
-        request.log.error({ err }, 'GEOJSON Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'GEOJSON Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

@@ -5,7 +5,55 @@ import { routeTag } from '../../../utils/route-tag.js';
 const sql = (params, query) => {
   const { table, point } = params;
   const {
-    geom_column = 'the_geom',
+    geom_column = 'geom',
+    columns = '*',
+    filter,
+    distance = 0,
+    sort,
+    limit,
+  } = query;
+  
+  const pointMatch = point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
+  if (!pointMatch) {
+    throw new Error('Invalid point format. Expected format: x,y,srid (e.g., 29.1234,41.5678,4326)');
+  }
+  
+  const [x, y, srid] = pointMatch[0].split(',').map(Number);
+  return `
+  SELECT
+    ${columns}
+
+  FROM
+    ${table}
+
+  WHERE
+    ST_DWithin(
+      ${geom_column},
+      ST_Transform(
+        st_setsrid(
+          st_makepoint(${x}, ${y}),
+          ${srid}
+        ),
+        (SELECT ST_SRID(${geom_column}) FROM ${table} LIMIT 1)
+      ),
+      ${distance}
+    )
+    -- Optional Filter
+    ${filter ? `AND ${filter}` : '' }
+
+  -- Optional sort
+  ${sort ? `ORDER BY ${sort}` : '' }
+
+  -- Optional limit
+  ${limit ? `LIMIT ${limit}` : '' }
+  `
+}
+
+/*
+const sql = (params, query) => {
+  const { table, point } = params;
+  const {
+    geom_column = 'geom',
     columns = '*',
     filter,
     distance = 0,
@@ -13,11 +61,11 @@ const sql = (params, query) => {
     limit,
   } = query;
 
-  const pointMatch = params.point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
+  const pointMatch = point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
   if (!pointMatch) {
     throw new Error('Invalid point format. Expected format: x,y,srid (e.g., 29.1234,41.5678,4326)');
   }
-
+  
   const [x, y, srid] = pointMatch[0].split(',').map(Number);
 
   return `
@@ -43,24 +91,25 @@ const sql = (params, query) => {
     ${limit ? `LIMIT ${limit}` : ''}
   `;
 };
+*/
 
 
 const schema = {
-  description: 'Return features that intersect a given point within a distance.',
+  description: 'Get features that intersect with a point.',
   tags: [routeTag(import.meta.url)],
-  summary: 'Return intersected features near a point',
+  summary: 'Features intersecting with point',
   params: {
     type: 'object',
     properties: {
       table: {
         type: 'string',
-        description: 'The name of the table or view.'
+        description: 'The name of the table or view to query.'
       },
       point: {
         type: 'string',
         pattern: '^((-?\\d+\\.?\\d+),(-?\\d+\\.?\\d+),(\\d{4}))$',
         description: 'A point expressed as X,Y,SRID.'
-      }
+      }	  
     },
     required: ['table', 'point']
   },
@@ -70,7 +119,7 @@ const schema = {
       geom_column: {
         type: 'string',
         description: 'The geometry column of the table.',
-        default: 'the_geom'
+        default: 'geom'
       },
       columns: {
         type: 'string',
@@ -79,7 +128,7 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional SQL WHERE filter.'
+        description: 'Optional filter parameters for a SQL WHERE statement. .'
       },
       distance: {
         type: 'integer',
@@ -109,14 +158,24 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing INTERSECT-POINT SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'INTERSECT POINT Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'INTERSECT-POINT Query Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
-        if (client) client.release();
+        client.release();
       }
     }
   });

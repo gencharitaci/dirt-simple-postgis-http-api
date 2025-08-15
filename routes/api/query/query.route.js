@@ -5,7 +5,7 @@ import { routeTag } from '../../../utils/route-tag.js';
 const sql = (params, query) => {
   const { table } = params;
   const {
-    columns = "*",
+    columns,
     filter,
     sort,
     group,
@@ -21,20 +21,19 @@ const sql = (params, query) => {
     ${group ? `GROUP BY ${group}` : ''}
     ${sort ? `ORDER BY ${sort}` : ''}
     ${limit ? `LIMIT ${limit}` : ''}
-  `;
+  `
 };
 
-
 const schema = {
-  description: 'Query a table or view.',
+  description: 'Execute a SQL query on a table.',
   tags: [routeTag(import.meta.url)],
-  summary: 'Table query',
+  summary: 'SQL query on table',
   params: {
     type: 'object',
     properties: {
       table: {
         type: 'string',
-        description: 'Table or view name.'
+        description: 'The name of the table or view to query.'
       }
     },
     required: ['table']
@@ -49,19 +48,19 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional SQL WHERE filter.'
+        description: 'Optional filter parameters for a SQL WHERE statement. .'
       },
       sort: {
         type: 'string',
-        description: 'Optional ORDER BY column(s).'
+        description: 'Optional ORDER BY clause.'
       },
       group: {
         type: 'string',
-        description: 'Optional GROUP BY column(s).'
+        description: 'Optional GROUP BY clause.'
       },
       limit: {
         type: 'integer',
-        description: 'Limit number of rows.',
+        description: 'Maximum number of records to return.',
         default: 100
       }
     }
@@ -79,12 +78,22 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing QUERY SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'QUERY TABLE Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'QUERY Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

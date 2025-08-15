@@ -47,6 +47,7 @@ const schema = {
   }
 };
 
+
 export default function (fastify, opts, next) {
   fastify.route({
     method: 'GET',
@@ -58,17 +59,27 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL for List Tables: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing LIST-TABLES SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'List Tables Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'LIST-TABLES Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }
     }
-  })
+  });
 
-  next()
+  next();
 };

@@ -9,3 +9,5 @@ TODO.md
 package-lock.json
 routes/dep_*.js
 routes/test_*.js
+desktop.ini
+swagger.json

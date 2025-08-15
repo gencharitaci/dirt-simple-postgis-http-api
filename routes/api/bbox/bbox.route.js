@@ -2,7 +2,6 @@
 import { errorResponse, successResponse } from '../../../utils/response.js';
 import { routeTag } from '../../../utils/route-tag.js';
 
-
 const sql = (params, query) => {
   const { table } = params;
   const {
@@ -38,7 +37,8 @@ const schema = {
         type: 'string',
         description: 'The name of the table or view to query.'
       }
-    }
+    },
+    required: ['table']
   },
   querystring: {
     type: 'object',
@@ -55,11 +55,16 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional filter parameters for a SQL WHERE statement.'
+        description: 'Optional filter parameters for a SQL WHERE statement. .'
+      },
+      force_on_surface: {
+        type: 'boolean',
+        description: 'Force the point to be on the surface of the geometry.',
+        default: false
       }
     }
   }
-}
+};
 
 // Create Route
 export default function (fastify, opts, next) {
@@ -73,17 +78,28 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info({ sql: sqlText }, 'Executing BBOX SQL');
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing BBOX SQL');
+
         const result = await client.query(sqlText);
-        return reply.send(successResponse(result.rows));
+        reply.type('application/json');
+        return reply.send(successResponse(result.data.rows));
       } catch (err) {
-        request.log.error({ err }, 'BBOX Query Error');
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'BBOX Query Error');
         return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }
     }
-  })
+  });
 
   next();
 };

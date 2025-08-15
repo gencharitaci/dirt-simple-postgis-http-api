@@ -36,8 +36,6 @@ const sql = (params, query) => {
   `;
 };
 
-
-
 const schema = {
   description: 'Intersect features within distance.',
   tags: [routeTag(import.meta.url)],
@@ -76,7 +74,7 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional WHERE clause.'
+        description: 'Optional WHERE clause. .'
       },
       distance: {
         type: 'integer',
@@ -106,12 +104,22 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing INTERSECT-FEATURE SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'INTERSECT FEATURE Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'INTERSECT-FEATURE Query Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

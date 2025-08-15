@@ -80,7 +80,6 @@ const schema = {
   }
 };
 
-
 export default function (fastify, opts, next) {
   fastify.route({
     method: 'GET',
@@ -92,7 +91,12 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing MVT SQL');
+
         const result = await client.query(sqlText);
         const mvt = result.rows[0]?.mvt;
         if (!mvt || mvt.length === 0) {
@@ -102,8 +106,13 @@ export default function (fastify, opts, next) {
           .header('Content-Type', 'application/x-protobuf')
           .send(mvt);
       } catch (err) {
-        request.log.error({ err }, 'MVT Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'MVT Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

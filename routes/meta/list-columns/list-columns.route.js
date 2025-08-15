@@ -26,7 +26,7 @@ const sql = (params, query) => {
 
 
 const schema = {
-  description: 'Returns a list of columns in the specified table.',
+  description: 'List columns in a table.',
   tags: [routeTag(import.meta.url)],
   summary: 'List table columns',
   params: {
@@ -51,14 +51,23 @@ export default function (fastify, opts, next) {
       const client = await fastify.pg.connect();
 
       try {
-
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing LIST-COLUMNS SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'List Columns Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'LIST-COLUMNS Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

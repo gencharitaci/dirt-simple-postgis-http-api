@@ -2,43 +2,62 @@
 import { errorResponse, successResponse } from '../../../utils/response.js';
 import { routeTag } from '../../../utils/route-tag.js';
 
-const sql = (params, query) => {
+const sql = async (client, params, query) => {
   const { table, point } = params;
-  const {
-    geom_column = 'the_geom',
+  let {
+    geom_column,
     columns,
     filter,
     limit,
   } = query;
 
-  const pointMatch = params.point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
+  const pointMatch = point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
   if (!pointMatch) {
     throw new Error('Invalid point format. Expected format: x,y,srid (e.g., 29.1234,41.5678,4326)');
   }
 
-  const [x, y, srid] = pointMatch[0].split(',').map(Number);
+  const [x, y, srid] = point.split(',').map(Number);
 
+  // Check if provided geom_column is valid
+  // if geom_column not equal to 'the_geom, try with geom_column='geom'
+  /*
+   *  cms_parcels and cms_parcels_future_py geom_column='geom', all others geom_column='the_geom'
+   */
+  try {
+    await client.query(`SELECT * FROM ${table} WHERE ${geom_column} IS NOT NULL LIMIT 1`);
+  } catch (err) {
+    // If not, try with 'geom'
+    geom_column = 'geom';
+    try {
+      await client.query(`SELECT * FROM ${table} WHERE ${geom_column} IS NOT NULL LIMIT 1`);
+    } catch (err) {
+      throw new Error(`No valid geometry column found in table "${table}"`);
+    }
+  }
+
+  // Return SQL string using direct ST_Transform instead of CTE
   return `
-    WITH input_geom AS (
-      SELECT 
-        ST_Transform(ST_SetSRID(ST_MakePoint(${x}, ${y}), ${srid}), srid) AS geom,
-        srid
-      FROM (
-        SELECT ST_SRID(${geom_column}) AS srid
-        FROM ${table}
-        WHERE ${geom_column} IS NOT NULL
-        LIMIT 1
-      ) AS sub
-    )
-
     SELECT
       ${columns},
-      ST_Distance(${geom_column}, input_geom.geom) AS distance
+      ST_Distance(
+        ST_Transform(
+          ST_SetSRID(ST_MakePoint(${x}, ${y}), ${srid}),
+          (SELECT ST_SRID(${geom_column}) FROM ${table} WHERE ${geom_column} IS NOT NULL LIMIT 1)
+        ),
+        ${geom_column}
+      ) AS distance
+
     FROM
-      ${table}, input_geom
+      ${table}
+
     ${filter ? `WHERE ${filter}` : ''}
+
     ORDER BY
-      ${geom_column} <-> input_geom.geom
+      ${geom_column} <-> ST_Transform(
+        ST_SetSRID(ST_MakePoint(${x}, ${y}), ${srid}),
+        (SELECT ST_SRID(${geom_column}) FROM ${table} WHERE ${geom_column} IS NOT NULL LIMIT 1)
+      )
+
     LIMIT ${limit};
   `;
 };
@@ -99,15 +118,25 @@ export default function (fastify, opts, next) {
       const client = await fastify.pg.connect();
 
       try {
-        const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        const sqlText = await sql(client, params, query);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing NEAREST SQL');
+
         const result = await client.query(sqlText);
         return reply.send(successResponse(result.rows));
       } catch (err) {
-        request.log.error({ err }, 'NEAREST Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: typeof sqlText !== 'undefined' ? sqlText : '[SQL generation failed]'
+        }, 'NEAREST Query Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
-        if (client) client.release();
+        client.release();
       }
     }
   });

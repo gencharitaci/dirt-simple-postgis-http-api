@@ -4,7 +4,7 @@ import { routeTag } from '../../../utils/route-tag.js';
 
 const sql = (params, query) => {
   const { point } = params;
-  const { srid = "4326" } = query;
+  const { srid = 4326 } = query;
 
   const pointMatch = point.match(/^((-?\d+\.?\d+),(-?\d+\.?\d+),(\d{4}))$/);
   if (!pointMatch) {
@@ -32,16 +32,16 @@ const sql = (params, query) => {
 };
 
 const schema = {
-  description: 'Transform a point to a different coordinate system.',
+  description: 'Transform a point from one coordinate system to another.',
   tags: [routeTag(import.meta.url)],
-  summary: 'Transform point to new SRID',
+  summary: 'Transform point coordinates',
   params: {
     type: 'object',
     properties: {
       point: {
         type: 'string',
         pattern: '^((-?\\d+\\.?\\d+),(-?\\d+\\.?\\d+),(\\d{4}))$',
-        description: 'A point expressed as X,Y,SRID.'
+        description: 'Point as X,Y,SRID.'
       }
     },
     required: ['point']
@@ -51,7 +51,7 @@ const schema = {
     properties: {
       srid: {
         type: 'integer',
-        description: 'Target SRID for output.',
+        description: 'Target SRID for the transformation. The default is <em>4326</em> WGS84 Lat/Lng.',
         default: 4326
       }
     }
@@ -69,14 +69,24 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing TRANSFORM-POINT SQL');
+
         const result = await client.query(sqlText);
-        return reply.send(successResponse(result.rows));
+        return reply.send(successResponse(result.rows[0]));
       } catch (err) {
-        request.log.error({ err }, 'TRANSFORM POINT Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'TRANSFORM-POINT Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
-        if (client) client.release();
+        client.release();
       }
     }
   });

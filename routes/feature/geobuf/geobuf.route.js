@@ -15,7 +15,8 @@ const sql = (params, query) => {
   const boundsLength = boundsArray?.length;
 
   const hasBounds = boundsLength === 4 || boundsLength === 3;
-  const hasFilter = !!filter;
+  const decodedFilter = filter ? decodeURIComponent(filter) : null;
+  const hasFilter = !!decodedFilter;
 
   const boundsCondition = hasBounds
     ? `${geom_column} && ST_Transform(
@@ -28,10 +29,9 @@ const sql = (params, query) => {
     : '';
 
   const whereClauses = [
-    hasFilter ? `${filter}` : null,
+    hasFilter ? `${decodedFilter}` : null,
     hasBounds ? boundsCondition : null
   ].filter(Boolean).join(' AND ');
-
 
   return `
     WITH srid_cte AS (
@@ -82,7 +82,7 @@ const schema = {
       },
       filter: {
         type: 'string',
-        description: 'Optional filter parameters for a SQL WHERE statement.'
+        description: 'Optional filter parameters for a SQL WHERE statement. .'
       },
       bounds: {
         type: 'string',
@@ -106,19 +106,27 @@ export default function (fastify, opts, next) {
 
       try {
         const sqlText = sql(params, query);
-        request.log.info(`Executing SQL: ${sqlText}`);
+        request.log.info({
+          sql: sqlText,
+          params,
+          query
+        }, 'Executing GEOBUF SQL');
+
         const result = await client.query(sqlText);
         if (!result.rows[0]?.st_asgeobuf) {
           return reply.code(204).send(); // No Content
         }
-        // Debugging: Check the type of st_asgeobuf
-        request.log.debug(`Result st_asgeobuf type: ${typeof result.rows[0].st_asgeobuf}`);
         return reply
           .header('Content-Type', 'application/x-protobuf')
           .send(successResponse(result.rows[0].st_asgeobuf));
       } catch (err) {
-        request.log.error({ err }, 'GEOBUF Query Error');
-        return reply.code(500).send(errorResponse('Query execution error.'));
+        request.log.error({
+          err,
+          params,
+          query,
+          sql: sql(params, query)
+        }, 'GEOBUF Error');
+        return reply.code(500).send(errorResponse('Database query error'));
       } finally {
         client.release();
       }

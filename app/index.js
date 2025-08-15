@@ -1,6 +1,7 @@
 import fastify from 'fastify';
 import { writeFile } from 'fs/promises';
 import config from '../config/index.js';
+import { createLogger } from '../config/logger.js';
 
 import autoload from '@fastify/autoload';
 import caching from '@fastify/caching';
@@ -13,44 +14,56 @@ import swagger from '@fastify/swagger';
 import swaggerUI from '@fastify/swagger-ui';
 import tableAccessControl from '../plugins/table-access-control.js';
 
-
-
 export default async function buildApp() {
+  const appLogger = createLogger('app');
+
   // CHECK ENVIRONMENT BEFORE APP STARTS
-  // Process exits before app is created if POSTGRES_CONNECTION env variable not set
   if (!config.postgres) {
     const errMsg = 'Required ENV variable POSTGRES_CONNECTION is not set. Please see README.md for more information.'
-    console.error(errMsg)
-    process.exit(1)
+    appLogger.error(errMsg);
+    process.exit(1);
   }
 
-  // Fastify instance for the app with logger options
-  const app = fastify({ logger: config.logger })
+  // Fastify instance for the app with logger options and schema validation
+  const app = fastify({
+    logger: {
+      level: process.env.LOG_LEVEL || 'info',
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'SYS:standard',
+          ignore: 'pid,hostname',
+        },
+      },
+    },
+    ajv: {
+      customOptions: {
+        removeAdditional: 'all',
+        coerceTypes: true,
+        useDefaults: true
+      }
+    }
+  });
 
-  // POSTGRES CONNECTION
-  const postgresConfig = { connectionString: config.postgres }
+  // PostgreSQL Configuration
+  const postgresConfig = { connectionString: config.postgres };
 
   // SSL Certificate Setup
   if (config.sslRootCert) {
-    postgresConfig.ssl = { ca: config.sslRootCert }
+    postgresConfig.ssl = { ca: config.sslRootCert };
   } else if (config.sslRootCertPath) {
     postgresConfig.ssl = {
       ca: await fs.readFile(config.sslRootCertPath, 'utf8')
-    }
+    };
   } else {
-    postgresConfig.ssl = null
+    postgresConfig.ssl = null;
   }
 
   // PLUGIN REGISTRATIONS
 
   // PostgreSQL Connection
   await app.register(postgres, postgresConfig);
-
-  // Helmet CSP(contentSecurityPolicy) optimization
-  await app.register(helmet, {
-    global: true,
-    contentSecurityPolicy: false,
-  });
 
   // Custom Table Access Control Plugin (White Listing)
   await app.register(tableAccessControl);
@@ -76,13 +89,57 @@ export default async function buildApp() {
 
   // Global error handler
   app.setErrorHandler((error, request, reply) => {
-    request.log.error(error);
+    appLogger.error({
+      type: 'error',
+      requestId: request.id,
+      error: {
+        message: error.message,
+        stack: error.stack,
+        code: error.code,
+        name: error.name
+      },
+      request: {
+        method: request.method,
+        url: request.url,
+        params: request.params,
+        query: request.query,
+        body: request.body,
+        headers: request.headers
+      }
+    });
+
+    const statusCode = error.statusCode || 500;
     const response = {
       success: false,
-      message: error.message,
-      ...(config.isDev && { stack: error.stack }),
+      error: {
+        message: error.message,
+        code: error.code || 'INTERNAL_SERVER_ERROR'
+      }
     };
-    reply.status(error.statusCode || 500).send(response);
+
+    if (config.isDev) {
+      response.error.stack = error.stack;
+    }
+
+    reply.status(statusCode).send(response);
+  });
+
+  // Not found handler
+  app.setNotFoundHandler((request, reply) => {
+    appLogger.warn({
+      type: 'not_found',
+      requestId: request.id,
+      method: request.method,
+      url: request.url
+    });
+
+    reply.status(404).send({
+      success: false,
+      error: {
+        message: 'Route not found',
+        code: 'NOT_FOUND'
+      }
+    });
   });
 
   // Initialize Swagger
@@ -95,16 +152,11 @@ export default async function buildApp() {
   // Swagger UI documentation setup
   await app.register(swaggerUI, {
     routePrefix: '/',
-    staticCSP: true, // Enables automatic CSP header integration compatible with 
-    transformStaticCSP: (header) =>
-      // Fix CSP error by allowing inline styles (used by Swagger UI)
-      header.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'"),
     uiConfig: {
       docExpansion: 'list',     // Controls how the API list appears initially: "full" | "list" | "none"
       deepLinking: false        // Disable deep linking to tags/operations
     }
   });
-
 
   // Auto load routes
   await app.register(autoload, {
@@ -118,11 +170,12 @@ export default async function buildApp() {
 
   // Export Swagger JSON (Only in development environment)
   if (config.isDev) {
+    await app.ready();
     const swaggerData = app.swagger();
     await writeFile('./swagger.json', JSON.stringify(swaggerData, null, 2));
   }
 
   // App is ready
-  return app
+  return app;
 }
 // Server.js will take care of the rest
